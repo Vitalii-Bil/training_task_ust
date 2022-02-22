@@ -13,7 +13,7 @@ To run this project locally you need to install python and create virtual enviro
 - create first user: `python manage.py createsuperuser`
 - make migrations: `python manage.py migrate`
 - run server: `DJANGO_SECRET_KEY=<random_sting> python manage.py runserver`
-- open the url specified in the terminal in нщгк browser
+- open the url specified in the terminal in your browser
 
-###Enjoy!
+#### Enjoy!
 

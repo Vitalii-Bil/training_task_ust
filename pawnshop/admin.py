@@ -34,17 +34,21 @@ class GoodAdmin(admin.ModelAdmin):
         'description',
         'material',
         'weight',
+        'rate_field',
         'status',
         'from_date',
         'redemption_time',
         'client',
+        'first_delivery_price',
+        'first_redemption_price',
         'get_delivery_price',
         'get_redemption_price',
     ]
-    readonly_fields = ('get_delivery_price', 'get_redemption_price')
-    list_display = ('name', 'status', 'from_date', 'redemption_time', 'get_delivery_price', 'get_redemption_price')
+    readonly_fields = ('first_delivery_price', 'first_redemption_price', 'get_delivery_price', 'get_redemption_price')
+    list_display = ('name', 'status', 'from_date', 'redemption_time')
     list_filter = ('status', 'client', 'material')
     actions = [change_status_to_user, change_status_to_pawnshop, change_status_to_waiting, change_status_to_sold]
+    search_fields = ['redemption_time']
 
 
 @admin.register(Material)
@@ -74,10 +78,12 @@ class ReadGoodInlineModelAdmin(admin.StackedInline):
         'from_date',
         'redemption_time',
         'client',
+        'first_delivery_price',
+        'first_redemption_price',
         'get_delivery_price',
         'get_redemption_price',
     ]
-    readonly_fields = ('get_delivery_price', 'get_redemption_price')
+    readonly_fields = ('first_delivery_price', 'first_redemption_price', 'get_delivery_price', 'get_redemption_price')
 
     def has_change_permission(self, request, obj=None):
         return False
@@ -92,6 +98,8 @@ class AddGoodInlineModelAdmin(admin.StackedInline):
     extra = 0
     verbose_name = 'Додати овар'
     verbose_name_plural = 'Додати товари'
+
+    exclude = ['first_delivery_price', 'first_redemption_price']
 
     def has_change_permission(self, request, obj=None):
         return False

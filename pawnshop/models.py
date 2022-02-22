@@ -1,6 +1,10 @@
+import decimal
+
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
+
+PERCENTAGE_VALIDATOR = [MinValueValidator(0), MaxValueValidator(100)]
 
 
 # Create your models here.
@@ -67,17 +71,26 @@ class Good(models.Model):
     )
     from_date = models.DateField(_("дата здачі"))
     redemption_time = models.DateField(_("кінцева дата викупу"))
+    rate_field = models.DecimalField(
+        _('відсоток на викуп (%)'),
+        max_digits=3,
+        decimal_places=0,
+        default=decimal.Decimal(5),
+        validators=PERCENTAGE_VALIDATOR
+    )
     client = models.ForeignKey(Client, on_delete=models.CASCADE, verbose_name=_('клієнт'))
+    first_delivery_price = models.DecimalField(_('ціна здачі (грн.)'), max_digits=8, decimal_places=2, null=True)
+    first_redemption_price = models.DecimalField(_('ціна викупу (грн.)'), max_digits=8, decimal_places=2, null=True)
 
     @property
     def get_delivery_price(self):
-        return f'{round(self.weight * self.material.cost, 2)} грн.'
-    get_delivery_price.fget.short_description = 'Ціна здачі'
+        return f'{round(self.weight * self.material.cost, 2)}'
+    get_delivery_price.fget.short_description = 'Ціна здачі станом на сьогодні (грн.)'
 
     @property
     def get_redemption_price(self):
-        return f'{round(float(self.weight * self.material.cost) * 1.05, 2)} грн.'
-    get_redemption_price.fget.short_description = 'Ціна викупу'
+        return f'{round(float(self.weight * self.material.cost) * 1.05, 2)}'
+    get_redemption_price.fget.short_description = 'Ціна викупу станом на сьогодні (грн.)'
 
     class Meta:
         verbose_name = 'Товар'
@@ -85,3 +98,9 @@ class Good(models.Model):
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.first_delivery_price = round(self.weight * self.material.cost, 2)
+            self.first_redemption_price = round(float(self.weight * self.material.cost) * 1.05, 2)
+        super(Good, self).save(*args, **kwargs)
